@@ -1,16 +1,24 @@
 #include "Adafruit_WS2801.h"
 #include "SPI.h" // Comment out this line if using Trinket or Gemma
-
-#include "Adafruit_NeoTrellis.h"
-
-Adafruit_NeoTrellis trellis;
-
-boolean button_state[16] = {false};        // state for each button
+#include <FastLED.h>
+#define DATA_PIN 5
+#define CLOCK_PIN 6
+#define NUM_LEDS 12
+  
+CRGB leds[NUM_LEDS];
 
 uint8_t dataPin  = 2;    // Yellow wire on Adafruit Pixels
 uint8_t clockPin = 3;    // Green wire on Adafruit Pixels
 
 Adafruit_WS2801 strip = Adafruit_WS2801(19, dataPin, clockPin);
+
+#include "Adafruit_NeoTrellis.h"
+Adafruit_NeoTrellis trellis;
+boolean button_state[16] = {false};        // state for each button
+
+
+
+
 
 //define a callback for key presses
 TrellisCallback blink(keyEvent evt){
@@ -32,6 +40,8 @@ void setup() {
   strip.begin();
   // Update LED contents, to start they are all 'off'
   strip.show();
+
+  FastLED.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);  // GRB ordering is typical
   
   //
   // set up neotrellis button array
@@ -58,6 +68,12 @@ void setup() {
 
 void loop() {
 
+  for (int i=0; i<NUM_LEDS; i++) {
+    leds[i] = CRGB::Green;
+    FastLED.show();    
+  }
+
+
   trellis.read();  // interrupt management does all the work! :)
   delay(20); //the trellis has a resolution of around 60hz
  
@@ -75,8 +91,6 @@ void loop() {
   // Turn on/off the neopixels!
   trellis.pixels.show();
   strip.show();   // write all the pixels out
-
-  
 
 }
 
