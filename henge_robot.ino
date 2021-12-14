@@ -1,23 +1,22 @@
 #include "Adafruit_WS2801.h"
 #include "SPI.h" // Comment out this line if using Trinket or Gemma
 #include <FastLED.h>
-#define DATA_PIN 5
-#define CLOCK_PIN 6
-#define NUM_LEDS 12
-  
-CRGB leds[NUM_LEDS];
 
-uint8_t dataPin  = 2;    // Yellow wire on Adafruit Pixels
-uint8_t clockPin = 3;    // Green wire on Adafruit Pixels
+// set up ws2812b strip
+#define DATA_PIN_1 5
+#define CLOCK_PIN_1 6
+#define NUM_LEDS_1 12
+CRGB leds_1[NUM_LEDS_1];
 
-Adafruit_WS2801 strip = Adafruit_WS2801(19, dataPin, clockPin);
+// set up ws2801 strip
+#define DATA_PIN_2 2
+#define CLOCK_PIN_2 3
+#define NUM_LEDS_2 19
+CRGB leds_2[NUM_LEDS_2];
 
 #include "Adafruit_NeoTrellis.h"
 Adafruit_NeoTrellis trellis;
 boolean button_state[16] = {false};        // state for each button
-
-
-
 
 
 //define a callback for key presses
@@ -33,15 +32,9 @@ void setup() {
   
   Serial.begin(9600);
   trellis.begin();
-   
-  //
-  // set up led strip
-  //
-  strip.begin();
-  // Update LED contents, to start they are all 'off'
-  strip.show();
 
-  FastLED.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);  // GRB ordering is typical
+  FastLED.addLeds<WS2812B, DATA_PIN_1, GRB>(leds_1, NUM_LEDS_1);  // GRB ordering is typical
+  FastLED.addLeds<WS2801, DATA_PIN_2, CLOCK_PIN_2, RGB>(leds_2, NUM_LEDS_2);
   
   //
   // set up neotrellis button array
@@ -68,8 +61,8 @@ void setup() {
 
 void loop() {
 
-  for (int i=0; i<NUM_LEDS; i++) {
-    leds[i] = CRGB::Green;
+  for (int i=0; i<NUM_LEDS_1; i++) {
+    leds_1[i] = CRGB::Green;
     FastLED.show();    
   }
 
@@ -81,16 +74,16 @@ void loop() {
   for (int i = 0; i<trellis.pixels.numPixels(); i++) {
     if (button_state[i] == true) {
       trellis.pixels.setPixelColor(i, Wheel(map(i, 0, trellis.pixels.numPixels(), 0, 255))); //on rising
-      strip.setPixelColor(i, Color(255, 0, 0));
+      leds_2[i] = CRGB::Green;
     }
     else if (button_state[i] == false) {
       trellis.pixels.setPixelColor(i, 0); //off falling
-      strip.setPixelColor(i, 0);
+      leds_2[i] = CRGB::Black;
     }
   }
   // Turn on/off the neopixels!
   trellis.pixels.show();
-  strip.show();   // write all the pixels out
+  FastLED.show();      // write all the pixels out
 
 }
 
