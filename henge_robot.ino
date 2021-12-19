@@ -26,6 +26,14 @@ TrellisCallback blink(keyEvent evt){
   if (evt.bit.EDGE == SEESAW_KEYPAD_EDGE_RISING) {
     button_state_previous[evt.bit.NUM] = button_state[evt.bit.NUM];  // store state before it is changed
     button_state[evt.bit.NUM] = !button_state[evt.bit.NUM];   // change button state
+    if (evt.bit.NUM == 15) {      // increment counter if button 15 is pressed
+      if (power < NUM_LEDS_1) {  
+        power += 1;
+      }
+      else {                      // reset at end of led strip
+        power = 0;
+      }
+    }
   }
   return 0;
 }
@@ -88,22 +96,16 @@ void loop() {
   trellis.pixels.show();
   FastLED.show();      // write all the pixels out
 
-
   // increment led strip for power up feature
-//  if (button_state[15] == true) {
-//    if (power < 12 ) {
-//      leds_1[power] = CRGB::White;      // light current position
-//      power+=1;    // increment power meter current position
-//      delay(500);
-//    }
-//    else if (power == 12) {         // switch off all at end of power meter
-//      for (int i = 0; i<12; i++) {
-//        leds_1[i] = CRGB::Black;
-//      }
-//      power = 0;        // reset current position
-//    }
-//    //FastLED.show();
-//  }
+  for (int i = 0; i<power; i++) {   
+      leds_1[i] = CRGB::White;      // light power bar positions
+  }  
+  
+  for (int i = power; i<NUM_LEDS_1; i++) {    // switch off non lit positions
+        leds_1[i] = CRGB::Black;
+  }
+  
+  FastLED.show();
 }
 
 /* Helper functions */
