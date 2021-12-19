@@ -7,6 +7,7 @@
 #define CLOCK_PIN_1 6
 #define NUM_LEDS_1 12
 CRGB leds_1[NUM_LEDS_1];
+int power = 0;   // power bar current position
 
 // set up ws2801 strip
 #define DATA_PIN_2 2
@@ -17,12 +18,13 @@ CRGB leds_2[NUM_LEDS_2];
 #include "Adafruit_NeoTrellis.h"
 Adafruit_NeoTrellis trellis;
 boolean button_state[16] = {false};        // state for each button
-
+boolean button_state_previous[16] = {false};        // state for each button
 
 //define a callback for key presses
 TrellisCallback blink(keyEvent evt){
   // Check is the pad pressed?
   if (evt.bit.EDGE == SEESAW_KEYPAD_EDGE_RISING) {
+    button_state_previous[evt.bit.NUM] = button_state[evt.bit.NUM];  // store state before it is changed
     button_state[evt.bit.NUM] = !button_state[evt.bit.NUM];   // change button state
   }
   return 0;
@@ -34,8 +36,11 @@ void setup() {
   trellis.begin();
 
   FastLED.addLeds<WS2812B, DATA_PIN_1, GRB>(leds_1, NUM_LEDS_1);  // GRB ordering is typical
-  FastLED.addLeds<WS2801, DATA_PIN_2, CLOCK_PIN_2, RGB>(leds_2, NUM_LEDS_2);
-  
+  FastLED.addLeds<WS2801, DATA_PIN_2, CLOCK_PIN_2, GBR>(leds_2, NUM_LEDS_2);
+  for (int i = 0; i<12; i++) {
+    leds_1[i] = CRGB::Black;
+  }
+  FastLED.show();
   //
   // set up neotrellis button array
   //
@@ -61,10 +66,6 @@ void setup() {
 
 void loop() {
 
-  for (int i=0; i<NUM_LEDS_1; i++) {
-    leds_1[i] = CRGB::Green;
-    FastLED.show();    
-  }
 
 
   trellis.read();  // interrupt management does all the work! :)
@@ -74,7 +75,9 @@ void loop() {
   for (int i = 0; i<trellis.pixels.numPixels(); i++) {
     if (button_state[i] == true) {
       trellis.pixels.setPixelColor(i, Wheel(map(i, 0, trellis.pixels.numPixels(), 0, 255))); //on rising
-      leds_2[i] = CRGB::Green;
+      
+      leds_2[i] = Wheel(map(i, 0, trellis.pixels.numPixels(), 0, 255));
+      Serial.println(i);
     }
     else if (button_state[i] == false) {
       trellis.pixels.setPixelColor(i, 0); //off falling
@@ -85,6 +88,22 @@ void loop() {
   trellis.pixels.show();
   FastLED.show();      // write all the pixels out
 
+
+  // increment led strip for power up feature
+//  if (button_state[15] == true) {
+//    if (power < 12 ) {
+//      leds_1[power] = CRGB::White;      // light current position
+//      power+=1;    // increment power meter current position
+//      delay(500);
+//    }
+//    else if (power == 12) {         // switch off all at end of power meter
+//      for (int i = 0; i<12; i++) {
+//        leds_1[i] = CRGB::Black;
+//      }
+//      power = 0;        // reset current position
+//    }
+//    //FastLED.show();
+//  }
 }
 
 /* Helper functions */
