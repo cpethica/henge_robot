@@ -26,12 +26,15 @@ TrellisCallback blink(keyEvent evt){
   if (evt.bit.EDGE == SEESAW_KEYPAD_EDGE_RISING) {
     button_state_previous[evt.bit.NUM] = button_state[evt.bit.NUM];  // store state before it is changed
     button_state[evt.bit.NUM] = !button_state[evt.bit.NUM];   // change button state
+    delay(50);   // debounce
     if (evt.bit.NUM == 15) {      // increment counter if button 15 is pressed
       if (power < NUM_LEDS_1) {  
         power += 1;
+        Serial.println(power);
       }
       else {                      // reset at end of led strip
         power = 0;
+        Serial.println(power);
       }
     }
   }
@@ -48,6 +51,7 @@ void setup() {
   for (int i = 0; i<12; i++) {
     leds_1[i] = CRGB::Black;
   }
+  FastLED.setBrightness(CRGB(40,40,40));
   FastLED.show();
   //
   // set up neotrellis button array
@@ -74,8 +78,6 @@ void setup() {
 
 void loop() {
 
-
-
   trellis.read();  // interrupt management does all the work! :)
   delay(20); //the trellis has a resolution of around 60hz
  
@@ -85,7 +87,7 @@ void loop() {
       trellis.pixels.setPixelColor(i, Wheel(map(i, 0, trellis.pixels.numPixels(), 0, 255))); //on rising
       
       leds_2[i] = Wheel(map(i, 0, trellis.pixels.numPixels(), 0, 255));
-      Serial.println(i);
+      //Serial.println(i);
     }
     else if (button_state[i] == false) {
       trellis.pixels.setPixelColor(i, 0); //off falling
@@ -99,7 +101,7 @@ void loop() {
   // increment led strip for power up feature
   for (int i = 0; i<power; i++) {   
       leds_1[i] = CRGB::White;      // light power bar positions
-  }  
+  }
   
   for (int i = power; i<NUM_LEDS_1; i++) {    // switch off non lit positions
         leds_1[i] = CRGB::Black;
