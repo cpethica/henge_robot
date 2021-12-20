@@ -2,12 +2,20 @@
 #include "SPI.h" // Comment out this line if using Trinket or Gemma
 #include <FastLED.h>
 
+#include "arrays.cpp"
+
 // set up ws2812b strip
 #define DATA_PIN_1 5
-#define CLOCK_PIN_1 6
 #define NUM_LEDS_1 12
 CRGB leds_1[NUM_LEDS_1];
 int power = 0;   // power bar current position
+
+// set up ws2812b matrix
+#define DATA_PIN_3 9
+#define NUM_LEDS_3 64
+CRGB leds_3[NUM_LEDS_1];
+int pic = 0;   // matrix picture current position
+int num_pics = 4;   // number of pictures available
 
 // set up ws2801 strip
 #define DATA_PIN_2 2
@@ -27,16 +35,24 @@ TrellisCallback blink(keyEvent evt){
     button_state_previous[evt.bit.NUM] = button_state[evt.bit.NUM];  // store state before it is changed
     button_state[evt.bit.NUM] = !button_state[evt.bit.NUM];   // change button state
     delay(50);   // debounce
+    // button for power bar
     if (evt.bit.NUM == 15) {      // increment counter if button 15 is pressed
       if (power < NUM_LEDS_1) {  
         power += 1;
-        Serial.println(power);
       }
       else {                      // reset at end of led strip
         power = 0;
-        Serial.println(power);
       }
     }
+    // button for matrix
+    if (evt.bit.NUM == 14) {      // increment counter if button 14 is pressed
+      if (pic < num_pics) {  
+        pic += 1;
+      }
+      else {                      // loop through available matrix pics
+        pic = 0;
+      }
+    }        
   }
   return 0;
 }
@@ -48,6 +64,8 @@ void setup() {
 
   FastLED.addLeds<WS2812B, DATA_PIN_1, GRB>(leds_1, NUM_LEDS_1);  // GRB ordering is typical
   FastLED.addLeds<WS2801, DATA_PIN_2, CLOCK_PIN_2, GBR>(leds_2, NUM_LEDS_2);
+  FastLED.addLeds<WS2812B, DATA_PIN_3, GRB>(leds_3, NUM_LEDS_3);  // GRB ordering is typical
+  
   for (int i = 0; i<12; i++) {
     leds_1[i] = CRGB::Black;
   }
@@ -94,9 +112,6 @@ void loop() {
       leds_2[i] = CRGB::Black;
     }
   }
-  // Turn on/off the neopixels!
-  trellis.pixels.show();
-  FastLED.show();      // write all the pixels out
 
   // increment led strip for power up feature
   for (int i = 0; i<power; i++) {   
@@ -106,8 +121,15 @@ void loop() {
   for (int i = power; i<NUM_LEDS_1; i++) {    // switch off non lit positions
         leds_1[i] = CRGB::Black;
   }
-  
-  FastLED.show();
+
+  // led matrix
+  for(int i = 0; i < NUM_LEDS_3; i++)
+  {
+    leds_3[i] = ledarray1[i];
+  }
+  // Turn on/off the neopixels!
+  trellis.pixels.show();
+  FastLED.show();      // write all the pixels out
 }
 
 /* Helper functions */
