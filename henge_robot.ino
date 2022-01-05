@@ -46,7 +46,7 @@ TrellisCallback blink(keyEvent evt){
     }
     // button for matrix
     if (evt.bit.NUM == 14) {      // increment counter if button 14 is pressed
-      if (pic < num_pics) {  
+      if (pic < num_pics-1) {  
         pic += 1;
       }
       else {                      // loop through available matrix pics
@@ -142,7 +142,7 @@ void loop() {
   // led matrix
   for(int i = 0; i < NUM_LEDS_3; i++)
   {
-    matrix[i] = ledarray[pic][i];
+    matrix[i] = pgm_read_dword(&(ledarray[pic][i]));
   }
 
   FastLED.show();      // write all the pixels out
