@@ -7,21 +7,21 @@
 // set up ws2812b strip
 #define DATA_PIN_1 5
 #define NUM_LEDS_1 12
-CRGB leds_1[NUM_LEDS_1];
+CRGB strip[NUM_LEDS_1];
 int power = 0;   // power bar current position
 
 // set up ws2812b matrix
 #define DATA_PIN_3 9
 #define NUM_LEDS_3 64
-CRGB leds_3[NUM_LEDS_1];
+CRGB matrix[NUM_LEDS_3];
 int pic = 0;   // matrix picture current position
-int num_pics = 4;   // number of pictures available
+int num_pics = 2;   // number of pictures available
 
-// set up ws2801 strip
+// set up ws2801 domes
 #define DATA_PIN_2 2
 #define CLOCK_PIN_2 3
 #define NUM_LEDS_2 19
-CRGB leds_2[NUM_LEDS_2];
+CRGB domes[NUM_LEDS_2];
 
 #include "Adafruit_NeoTrellis.h"
 Adafruit_NeoTrellis trellis;
@@ -62,13 +62,18 @@ void setup() {
   Serial.begin(9600);
   trellis.begin();
 
-  FastLED.addLeds<WS2812B, DATA_PIN_1, GRB>(leds_1, NUM_LEDS_1);  // GRB ordering is typical
-  FastLED.addLeds<WS2801, DATA_PIN_2, CLOCK_PIN_2, GBR>(leds_2, NUM_LEDS_2);
-  FastLED.addLeds<WS2812B, DATA_PIN_3, GRB>(leds_3, NUM_LEDS_3);  // GRB ordering is typical
-  
+  // led strip
+  FastLED.addLeds<WS2812B, DATA_PIN_1, GRB>(strip, NUM_LEDS_1);  // GRB ordering is typical
+  // led dome lights
+  FastLED.addLeds<WS2801, DATA_PIN_2, CLOCK_PIN_2, GBR>(domes, NUM_LEDS_2);
+  // led matrix
+  FastLED.addLeds<WS2812B, DATA_PIN_3, GRB>(matrix, NUM_LEDS_3);  // GRB ordering is typical
+
+  // set strip to black initially
   for (int i = 0; i<12; i++) {
-    leds_1[i] = CRGB::Black;
+    strip[i] = CRGB::Black;
   }
+  
   FastLED.setBrightness(CRGB(40,40,40));
   FastLED.show();
   //
@@ -104,31 +109,32 @@ void loop() {
     if (button_state[i] == true) {
       trellis.pixels.setPixelColor(i, Wheel(map(i, 0, trellis.pixels.numPixels(), 0, 255))); //on rising
       
-      leds_2[i] = Wheel(map(i, 0, trellis.pixels.numPixels(), 0, 255));
+      domes[i] = Wheel(map(i, 0, trellis.pixels.numPixels(), 0, 255));
       //Serial.println(i);
     }
     else if (button_state[i] == false) {
       trellis.pixels.setPixelColor(i, 0); //off falling
-      leds_2[i] = CRGB::Black;
+      domes[i] = CRGB::Black;
     }
   }
-
+  
+  trellis.pixels.show();
+  
   // increment led strip for power up feature
   for (int i = 0; i<power; i++) {   
-      leds_1[i] = CRGB::White;      // light power bar positions
+      strip[i] = CRGB::White;      // light power bar positions
   }
   
   for (int i = power; i<NUM_LEDS_1; i++) {    // switch off non lit positions
-        leds_1[i] = CRGB::Black;
+        strip[i] = CRGB::Black;
   }
 
   // led matrix
   for(int i = 0; i < NUM_LEDS_3; i++)
   {
-    leds_3[i] = ledarray1[i];
+    matrix[i] = ledarray1[i];
   }
-  // Turn on/off the neopixels!
-  trellis.pixels.show();
+
   FastLED.show();      // write all the pixels out
 }
 
