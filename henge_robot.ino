@@ -15,12 +15,12 @@ int power = 0;   // power bar current position
 #define NUM_LEDS_3 64
 CRGB matrix[NUM_LEDS_3];
 int pic = 0;   // matrix picture current position
-int num_pics = 2;   // number of pictures available
+int num_pics = 8;   // number of pictures available
 
 // set up ws2801 domes
 #define DATA_PIN_2 2
 #define CLOCK_PIN_2 3
-#define NUM_LEDS_2 19
+#define NUM_LEDS_2 8
 CRGB domes[NUM_LEDS_2];
 
 #include "Adafruit_NeoTrellis.h"
@@ -104,19 +104,29 @@ void loop() {
   trellis.read();  // interrupt management does all the work! :)
   delay(20); //the trellis has a resolution of around 60hz
  
-  // check button status and update pixels
-  for (int i = 0; i<trellis.pixels.numPixels(); i++) {
+  // check button status and update pixels for dome lights
+  for (int i = 0; i<NUM_LEDS_2; i++) {
     if (button_state[i] == true) {
       trellis.pixels.setPixelColor(i, Wheel(map(i, 0, trellis.pixels.numPixels(), 0, 255))); //on rising
-      
       domes[i] = Wheel(map(i, 0, trellis.pixels.numPixels(), 0, 255));
-      //Serial.println(i);
     }
     else if (button_state[i] == false) {
       trellis.pixels.setPixelColor(i, 0); //off falling
       domes[i] = CRGB::Black;
     }
   }
+
+   // check button status and update pixel for other lights
+  for (int i = NUM_LEDS_2; i<trellis.pixels.numPixels(); i++) {
+    if (button_state[i] == true) {
+      trellis.pixels.setPixelColor(i, Wheel(map(i, 0, trellis.pixels.numPixels(), 0, 255))); //on rising
+    }
+    else if (button_state[i] == false) {
+      trellis.pixels.setPixelColor(i, 0); //off falling
+    }
+  } 
+
+  
   
   trellis.pixels.show();
   
@@ -132,7 +142,7 @@ void loop() {
   // led matrix
   for(int i = 0; i < NUM_LEDS_3; i++)
   {
-    matrix[i] = ledarray1[i];
+    matrix[i] = ledarray[pic][i];
   }
 
   FastLED.show();      // write all the pixels out
