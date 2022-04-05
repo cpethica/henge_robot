@@ -6,9 +6,10 @@
 
 // set up ws2812b strip
 #define DATA_PIN_1 5
-#define NUM_LEDS_1 12
+#define NUM_LEDS_1 10
 CRGB strip[NUM_LEDS_1];
 int power = 0;   // power bar current position
+uint32_t strip_colours[] = {CRGB::Red, CRGB::Red, CRGB::Red, CRGB::Red, CRGB::Orange, CRGB::Orange, CRGB::Orange, CRGB::Green, CRGB::Green, CRGB::Green, CRGB::Green};
 
 // set up ws2812b matrix
 #define DATA_PIN_3 9
@@ -20,8 +21,10 @@ int num_pics = 8;   // number of pictures available
 // set up ws2801 domes
 #define DATA_PIN_2 2
 #define CLOCK_PIN_2 3
-#define NUM_LEDS_2 8
+#define NUM_LEDS_2 5
 CRGB domes[NUM_LEDS_2];
+uint32_t colours[] = {CRGB::Red, CRGB::Blue, CRGB::Purple, CRGB::Orange, CRGB::Yellow};
+const int led_brightness = 255;
 
 #include "Adafruit_NeoTrellis.h"
 Adafruit_NeoTrellis trellis;
@@ -74,7 +77,7 @@ void setup() {
     strip[i] = CRGB::Black;
   }
   
-  FastLED.setBrightness(CRGB(40,40,40));
+  FastLED.setBrightness(led_brightness);
   FastLED.show();
   //
   // set up neotrellis button array
@@ -108,7 +111,7 @@ void loop() {
   for (int i = 0; i<NUM_LEDS_2; i++) {
     if (button_state[i] == true) {
       trellis.pixels.setPixelColor(i, Wheel(map(i, 0, trellis.pixels.numPixels(), 0, 255))); //on rising
-      domes[i] = Wheel(map(i, 0, trellis.pixels.numPixels(), 0, 255));
+      domes[i] = colours[i];
     }
     else if (button_state[i] == false) {
       trellis.pixels.setPixelColor(i, 0); //off falling
@@ -132,7 +135,7 @@ void loop() {
   
   // increment led strip for power up feature
   for (int i = 0; i<power; i++) {   
-      strip[i] = CRGB::White;      // light power bar positions
+      strip[i] = strip_colours[i];      // light power bar positions
   }
   
   for (int i = power; i<NUM_LEDS_1; i++) {    // switch off non lit positions
